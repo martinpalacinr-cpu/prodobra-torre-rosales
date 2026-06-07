@@ -12,6 +12,7 @@ from datetime import datetime, date, timedelta
 import hashlib
 import json
 from io import BytesIO
+import plotly.express as px
 
 # ============================================
 # CONFIGURACIÓN DE LA PÁGINA
