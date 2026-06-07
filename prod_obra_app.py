@@ -688,6 +688,54 @@ def admin_dashboard(user):
                         st.error("❌ El nombre de usuario ya existe.")
                 else:
                     st.error("Todos los campos son obligatorios.")
+
+        # ==========================================
+        # EDITAR USUARIO EXISTENTE
+        # ==========================================
+        st.markdown("---")
+        st.subheader("✏️ Editar Usuario Existente")
+
+        if not users_df.empty:
+            user_options = {row['full_name']: row['id'] for _, row in users_df.iterrows()}
+            selected_name = st.selectbox(
+                "Selecciona el usuario que quieres editar",
+                options=list(user_options.keys())
+            )
+            selected_id = user_options[selected_name]
+            selected_row = users_df[users_df['id'] == selected_id].iloc[0]
+
+            with st.form("edit_user_form"):
+                new_full_name = st.text_input("Nombre completo y cargo", value=selected_row['full_name'])
+                
+                col1, col2 = st.columns(2)
+                with col1:
+                    reset_pass = st.checkbox("Resetear contraseña a '123456'")
+                with col2:
+                    is_active = st.checkbox("Usuario Activo", value=bool(selected_row['active']))
+
+                submitted = st.form_submit_button("💾 Guardar Cambios")
+
+                if submitted:
+                    cursor = conn.cursor()
+                    # Actualizar nombre
+                    cursor.execute(
+                        "UPDATE users SET full_name = ?, active = ? WHERE id = ?",
+                        (new_full_name, 1 if is_active else 0, selected_id)
+                    )
+                    
+                    # Resetear contraseña si está marcado
+                    if reset_pass:
+                        new_hash = hashlib.sha256(("123456" + "prodobra_salt_2026").encode()).hexdigest()
+                        cursor.execute(
+                            "UPDATE users SET password_hash = ? WHERE id = ?",
+                            (new_hash, selected_id)
+                        )
+                    
+                    conn.commit()
+                    st.success(f"✅ Usuario '{new_full_name}' actualizado correctamente.")
+                    st.rerun()
+        else:
+            st.info("No hay usuarios para editar.")
     
     # ==========================================
     # CATÁLOGO DE ACTIVIDADES
