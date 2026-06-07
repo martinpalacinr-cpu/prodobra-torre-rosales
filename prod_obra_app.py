@@ -75,7 +75,7 @@ st.markdown("""
 # ============================================
 # FUNCIONES DE BASE DE DATOS
 # ============================================
-DB_PATH = "/home/workdir/artifacts/productividad_obra.db"
+DB_PATH = "productividad_obra.db"
 
 @st.cache_resource
 def get_connection():
